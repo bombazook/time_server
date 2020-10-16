@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+require 'samovar'
+require 'bundler'
+
+require_relative '../lib/time_server'
+
+class Serve < Samovar::Command
+  self.description = "Start time server."
+
+  options do
+    option '-b/--bind <address>', "Bind to the given hostname/address.", default: 'http://localhost:1234'
+    option '-s/--selector <text>', "Selector backend.", default: 'select'
+    option '-r/--read-buffer <number>', "Read buffer size", default: 2**12
+  end
+
+  def call
+    Bundler.require(:default)
+    TimeServer::Server.new(**@options.slice(:bind, :selector), buffers: {read: @options[:read_buffer].to_i}).run
+  end
+end
+
+Serve.call
