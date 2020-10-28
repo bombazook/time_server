@@ -2,17 +2,17 @@
 
 require 'rack'
 require_relative 'lib/time_server/tzmap'
+require_relative 'lib/time_server/application'
 
 module Rack
   class TestApp
+    def initialize
+      @app = TimeServer::Application.new
+    end
+
     def call(env)
-      if env[REQUEST_PATH] =~ /\/time($|\?)/
-        ids = env[QUERY_STRING]&.split(',')
-        resp_body = TimeServer::TZMap.times_by_ids(ids).join("\r\n")
-        [200, { CONTENT_TYPE => 'text/plain', CONTENT_LENGTH => resp_body.size.to_s }, [resp_body]]
-      else
-        [400, {},["Wrong request"]]
-      end
+      request = Rack::Request.new(env)
+      @app.call(request)
     end
   end
 end

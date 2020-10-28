@@ -1,8 +1,10 @@
 #!/usr/bin/env ruby
 require 'samovar'
 require 'bundler'
+require 'byebug'
 
 require_relative '../lib/time_server'
+require_relative '../lib/time_server/application'
 
 class Serve < Samovar::Command
   self.description = "Start time server."
@@ -10,13 +12,26 @@ class Serve < Samovar::Command
   options do
     option '-b/--bind <address>', "Bind to the given hostname/address.", default: 'http://localhost:1234'
     option '-s/--selector <text>', "Selector backend.", default: 'select'
-    option '-r/--read-buffer <number>', "Read buffer size", default: 2**12
+    option '-r/--block-size <number>', "Read chunk size", default: 2**12
+    option '-l/--logging', "Write request log"
   end
 
   def call
     Bundler.require(:default)
-    TimeServer::Server.new(**@options.slice(:bind, :selector), buffers: {read: @options[:read_buffer].to_i}).run
+    server_options = @options.slice(:bind, :block_size, :logging)
+    server_options[:block_size] = server_options[:block_size].to_i
+    server_options[:selector] = selector_backend
+    TimeServer::Runner.new(TimeServer::Application.new, **server_options).run
+  end
+
+  def selector_backend
+    if NIO::Selector.backends.map(&:to_s).include? @options[:selector]
+      @options[:selector].to_sym
+    else
+      :select
+    end
   end
 end
 
 Serve.call
+
