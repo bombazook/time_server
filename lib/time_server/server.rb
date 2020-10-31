@@ -22,17 +22,18 @@ module TimeServer
     def accept(io)
       socket = io.accept_nonblock(exception: false)
       connection = Connection.new(socket, @selector, **options.slice(:block_size))
-
       # weirdest http possible
-      begin
-        request = Request.new(connection)
-        response = Response[*application&.call(request)]
-        respond_and_close connection, response
-      rescue InvalidRequest
-        resp_body = "Unknown error"
-        response = Response[500, {'Content-type' => 'text/plain', 'Content-length' => resp_body.bytesize.to_s}, [resp_body]]
-        respond_and_close connection, response
-      end
+      Fiber.new do
+        begin
+          request = Request.new(connection)
+          response = Response[*application&.call(request)]
+          respond_and_close connection, response
+        rescue InvalidRequest
+          resp_body = "Unknown error"
+          response = Response[500, {'Content-type' => 'text/plain', 'Content-length' => resp_body.bytesize.to_s}, [resp_body]]
+          respond_and_close connection, response
+        end
+      end.resume
     end
 
     def respond_and_close connection, response

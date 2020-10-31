@@ -61,7 +61,7 @@ RSpec.describe TimeServer::Runner do
 
       it "responds on multiple simultaneous request at the same time" do
         request = "GET /time HTTP/1.1\r\n\r\n"
-        map = 10.times.map{ do_test(request).read(4) }
+        map = 10.times.map{ do_test(request, 2).read(4) }
         expect(map).to match_array(10.times.map{"HTTP"})
       end
 
@@ -84,6 +84,17 @@ RSpec.describe TimeServer::Runner do
           request = "GET /time?#{key_string} HTTP/1.1\r\n\r\n"
           response = read_response(do_test(request))
           expect(response).to include(*keys)
+        end
+      end
+
+      context "slow request" do
+        it "doesnt block" do
+          request = "GET /time?Moscow HTTP/1.1\r\n\r\n"
+          Thread.new do
+            do_test(request, 10, 1000).read
+          end
+          response = do_test(request).read
+          expect(response).to match(/^HTTP\/\d\.\d\ 200\ OK\r\n.+\r\n\r\nUTC:\ .*\r\nMoscow:\ /mx)
         end
       end
     end
