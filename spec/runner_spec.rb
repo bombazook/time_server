@@ -14,10 +14,11 @@ RSpec.describe TimeServer::Runner do
     socket
   end
 
-  def read_response(io, chunk=2**12)
+  def read_response(io, chunk=2**12, slow=nil)
     response = StringIO.new
     while data = io.read(chunk)
       response.write data
+      sleep slow if slow
     end
     response.string
   end
@@ -87,14 +88,15 @@ RSpec.describe TimeServer::Runner do
         end
       end
 
-      context "slow request" do
+      context "slow ingress request" do
         it "doesnt block" do
           request = "GET /time?Moscow HTTP/1.1\r\n\r\n"
-          Thread.new do
-            do_test(request, 10, 1000).read
+          t = Thread.new do
+            do_test(request, 10, 1).read
           end
           response = do_test(request).read
           expect(response).to match(/^HTTP\/\d\.\d\ 200\ OK\r\n.+\r\n\r\nUTC:\ .*\r\nMoscow:\ /mx)
+          t.join
         end
       end
     end

@@ -17,6 +17,5 @@ module TimeServer
     def query_string
       @path&.sub(/.*\?/, '')
     end
-
   end
 end

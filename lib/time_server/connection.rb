@@ -17,29 +17,10 @@ module TimeServer
       @read_buffer = Buffer.new
     end
 
-    def read(size = @options[:block_size])
-      reader_monitor
-      buffer = Buffer.new
-      loop do
-        read_size = next_read_size(buffer, size)
-        if read_size == 0
-          @monitor.remove_interest :r
-          return buffer
-        else
-          data = @io.read_nonblock(read_size, exception: false)
-          if data == :wait_readable
-            Fiber.yield
-          else
-            buffer << data
-          end
-        end
-      end
-    end
-
     def read_partial(size = @options[:block_size])
       size ||= @options[:block_size]
       reader_monitor
-      loop do
+      while true
         data = @io.read_nonblock(size, exception: false)
         if data == :wait_readable
           Fiber.yield
@@ -112,14 +93,6 @@ module TimeServer
         @monitor.value = Fiber.current
       end
       @monitor.add_interest :w
-    end
-
-    def next_read_size buffer, size
-      if buffer.size + @options[:block_size] <= size
-        @options[:block_size]
-      else
-        size - buffer.size
-      end
     end
   end
 end
