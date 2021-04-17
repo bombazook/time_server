@@ -23,6 +23,7 @@ module TimeServer
 
     def accept(io)
       socket = io.accept_nonblock(exception: false)
+      return if socket == :wait_readable
       connection = Connection.new(socket, @selector, **options.slice(:block_size))
       Fiber.new do
         request = Request.new(connection)

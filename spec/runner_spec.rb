@@ -42,7 +42,7 @@ RSpec.describe TimeServer::Runner do
   before :all do
     @application = TimeServer::Application.new
     @server = described_class.new(@application, bind: 'http://127.0.0.1:1234')
-    @server.run true
+    @server.run background: true
     wait_untill_available
   end
 

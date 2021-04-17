@@ -14,7 +14,7 @@ module TimeServer
       trap('EXIT') { stop }
     end
 
-    def run(background = false, &application)
+    def run(background: false, &application)
       if background == true
         @thread = Thread.new do
           handle_server(&application)
