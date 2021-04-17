@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module TimeServer
   class Buffer < String
     def initialize
@@ -5,14 +7,14 @@ module TimeServer
       force_encoding(Encoding::BINARY)
     end
 
-    def << string
+    def <<(string)
       if string.encoding == Encoding::BINARY
         super(string)
       else
         super(string.b)
       end
 
-      return self
+      self
     end
   end
 end

@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 require 'samovar'
 require 'bundler'
 require 'byebug'
@@ -7,13 +9,13 @@ require_relative '../lib/time_server'
 require_relative '../lib/time_server/application'
 
 class Serve < Samovar::Command
-  self.description = "Start time server."
+  self.description = 'Start time server.'
 
   options do
-    option '-b/--bind <address>', "Bind to the given hostname/address.", default: 'http://localhost:1234'
-    option '-s/--selector <text>', "Selector backend.", default: 'select'
-    option '-r/--block-size <number>', "Read chunk size", default: 2**12
-    option '-l/--logging', "Write request log"
+    option '-b/--bind <address>', 'Bind to the given hostname/address.', default: 'http://localhost:1234'
+    option '-s/--selector <text>', 'Selector backend.', default: 'select'
+    option '-r/--block-size <number>', 'Read chunk size', default: 2**12
+    option '-l/--logging', 'Write request log'
   end
 
   def call
@@ -34,4 +36,3 @@ class Serve < Samovar::Command
 end
 
 Serve.call
-

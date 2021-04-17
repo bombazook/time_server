@@ -1,18 +1,22 @@
+# frozen_string_literal: true
+
 source 'https://rubygems.org'
 
-gem 'rack'
+gem 'addressable'
 gem 'async'
 gem 'async-http'
 gem 'falcon'
-gem 'tzinfo'
+gem 'rack'
 gem 'samovar'
-gem 'addressable'
+gem 'tzinfo'
 
 group :development, :test do
   gem 'byebug'
   gem 'rspec'
-  gem 'timecop'
-  gem 'simplecov'
   gem 'rspec-benchmark'
+  gem 'rubocop'
+  gem 'rubocop-rspec', require: false
+  gem 'simplecov'
+  gem 'timecop'
   gem 'typhoeus'
 end

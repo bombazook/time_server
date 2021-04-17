@@ -1,15 +1,17 @@
+# frozen_string_literal: true
+
 module TimeServer
   class Response
     REASON_DESCRIPTIONS = {
-      400 => "Bad Request",
-      200 => "OK",
-      500 => "Internal Server Error"
-    }
+      400 => 'Bad Request',
+      200 => 'OK',
+      500 => 'Internal Server Error'
+    }.freeze
 
     attr_accessor :status, :body
 
-    def self.[] status, headers, body
-      self.new(body, status, headers)
+    def self.[](status, headers, body)
+      new(body, status, headers)
     end
 
     def initialize(body = nil, status = 200, headers = {})
@@ -22,8 +24,8 @@ module TimeServer
       b = Buffer.new
       b << "HTTP/1.1 #{@status} #{reason}"
       b << CRLF
-      if !@headers&.empty?
-        b << @headers.flat_map{|k,v| "#{k}: #{v}"}.join(CRLF)
+      unless @headers&.empty?
+        b << @headers.flat_map { |k, v| "#{k}: #{v}" }.join(CRLF)
         b << CRLF
       end
       b << CRLF

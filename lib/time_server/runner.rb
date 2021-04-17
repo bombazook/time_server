@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 require 'nio'
 require 'socket'
@@ -6,20 +7,20 @@ require 'addressable/uri'
 
 module TimeServer
   class Runner
-    def initialize application=nil, **options
+    def initialize(application = nil, **options)
       @options = options
       @application = application
-      trap("INT"){ stop }
-      trap("EXIT"){ stop }
+      trap('INT') { stop }
+      trap('EXIT') { stop }
     end
 
-    def run background=false, &application
+    def run(background = false, &application)
       if background == true
         @thread = Thread.new do
-          handle_server &application
+          handle_server(&application)
         end
       else
-        handle_server &application
+        handle_server(&application)
       end
     end
 
@@ -37,10 +38,10 @@ module TimeServer
       @server.options[:block_size] = @options[:block_size]
     end
 
-    def handle_server &application
+    def handle_server(&application)
       build_server
       @server.application = application if block_given?
-      while !@stopped
+      until @stopped
         @selector.select do |monitor|
           monitor.value.resume
         end

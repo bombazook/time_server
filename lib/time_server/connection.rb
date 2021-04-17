@@ -1,9 +1,10 @@
+# frozen_string_literal: true
+
 require 'fiber'
 require 'forwardable'
 
 module TimeServer
   class Connection
-
     extend Forwardable
 
     def_delegators :@io, :closed?, :close_read
@@ -41,10 +42,11 @@ module TimeServer
 
       until index = @read_buffer.index(pattern, offset)
         offset = @read_buffer.bytesize - split_offset
-        offset = 0 if offset < 0
+        offset = 0 if offset.negative?
 
         partial = read_partial
         return unless partial # EOF
+
         @read_buffer << partial
       end
 
@@ -58,7 +60,7 @@ module TimeServer
       writer_monitor
       written = 0
       remaining = buffer.size
-      while remaining > 0
+      while remaining.positive?
         writing = buffer.byteslice(written, remaining)
         length = @io.write_nonblock(writing, exception: false)
         if length == :wait_writable

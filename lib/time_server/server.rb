@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module TimeServer
   class Server
     attr_accessor :application
@@ -22,27 +24,22 @@ module TimeServer
     def accept(io)
       socket = io.accept_nonblock(exception: false)
       connection = Connection.new(socket, @selector, **options.slice(:block_size))
-      # weirdest http possible
       Fiber.new do
-        begin
-          request = Request.new(connection)
-          response = Response[*application&.call(request)]
-          respond_and_close connection, response
-        rescue InvalidRequest
-          resp_body = "Unknown error"
-          response = Response[500, {'Content-type' => 'text/plain', 'Content-length' => resp_body.bytesize.to_s}, [resp_body]]
-          respond_and_close connection, response
-        end
+        request = Request.new(connection)
+        response = Response[*application.call(request)]
+        respond_and_close connection, response
+      rescue InvalidRequest
+        response = Response[500, { 'Content-type' => 'text/plain', 'Content-length' => resp_body.bytesize.to_s },
+                            ['Unknown error']]
+        respond_and_close connection, response
       end.resume
     end
 
-    def respond_and_close connection, response
-      begin
-        connection.close_read
-        connection.write(response.to_s)
-      ensure
-        connection.close
-      end
+    def respond_and_close(connection, response)
+      connection.close_read
+      connection.write(response.to_s)
+    ensure
+      connection.close
     end
   end
 end
