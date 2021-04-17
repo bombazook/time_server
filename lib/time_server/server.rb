@@ -24,14 +24,16 @@ module TimeServer
     def accept(io)
       socket = io.accept_nonblock(exception: false)
       return if socket == :wait_readable
+      
       connection = Connection.new(socket, @selector, **options.slice(:block_size))
       Fiber.new do
         request = Request.new(connection)
         response = Response[*application.call(request)]
         respond_and_close connection, response
       rescue InvalidRequest
+        resp_body = 'Unknown error'
         response = Response[500, { 'Content-type' => 'text/plain', 'Content-length' => resp_body.bytesize.to_s },
-                            ['Unknown error']]
+                            [resp_body]]
         respond_and_close connection, response
       end.resume
     end
