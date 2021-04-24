@@ -47,3 +47,7 @@ Percentage of the requests served within a certain time (ms)
   99%     67
  100%  27332 (longest request)
 ```
+
+# Live demo
+
+[time.kostrov.net](http://time.kostrov.net/time?Kaliningrad,Moscow,New_York)
